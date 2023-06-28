@@ -1,5 +1,7 @@
 Flask
 Flask-Cors==3.0.10
+flask_httpauth==4.5.0
+werkzeug==2.0.2
 Gunicorn
 openai
 urllib3==1.26.7

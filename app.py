@@ -3,6 +3,21 @@ import tempfile
 from flask import Flask, request, send_from_directory
 import openai
 from queryable_index import QueryableIndex
+from flask_httpauth import HTTPBasicAuth
+from werkzeug.security import generate_password_hash, check_password_hash
+
+
+# Load the username and password from the environment
+auth = HTTPBasicAuth()
+username = os.getenv("BASIC_AUTH_USERNAME")
+password_hash = generate_password_hash(os.getenv("BASIC_AUTH_PASSWORD"))
+
+
+@auth.verify_password
+def verify_password(input_username, input_password):
+    if input_username == username and check_password_hash(
+            password_hash, input_password):
+        return input_username
 
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -19,7 +34,8 @@ def transcribe_audio(file):
     print(f"Transcribing {file.filename}")
 
     # Create a temporary file with the same extension as the uploaded file
-    with tempfile.NamedTemporaryFile(suffix="." + file_extension, delete=False) as temp_file:
+    with tempfile.NamedTemporaryFile(
+            suffix="." + file_extension, delete=False) as temp_file:
         temp_file.write(file.read())
 
     # Transcribe the audio file using the OpenAI Whisper API
@@ -47,11 +63,13 @@ def create_estimate(prompt):
 
 
 @app.route('/')
+@auth.login_required
 def home():
     return send_from_directory(app.static_folder, 'index.html')
 
 
 @app.route('/transcribe', methods=['POST'])
+@auth.login_required
 def transcribe():
     try:
         file = request.files['audio_file']
@@ -62,6 +80,7 @@ def transcribe():
 
 
 @app.route('/create-estimate', methods=['POST'])
+@auth.login_required
 def estimate():
     try:
         prompt = request.json['prompt']
@@ -73,6 +92,7 @@ def estimate():
 
 
 @app.route('/pipeline', methods=['POST'])
+@auth.login_required
 def pipeline():
     try:
         file = request.files['audio_file']
