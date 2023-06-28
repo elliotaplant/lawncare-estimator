@@ -45,7 +45,7 @@
 
       <!-- Estimate form -->
       <form id="estimateForm">
-        <textarea name="prompt" required>
+        <textarea name="prompt" required rows="20">
         Create a list of materials, labor and other work required to complete a job for the following transcript:
 
         "{{ transcript }}"
@@ -69,15 +69,7 @@
         var submitButton = e.target.querySelector('input[type="submit"]');
         submitButton.disabled = true;
 
-        var formData;
-        if (e.target.querySelector('textarea[name="prompt"]')) {
-          var prompt = e.target.querySelector('textarea[name="prompt"]').value;
-          formData = JSON.stringify({ prompt: prompt });
-        } else {
-          formData = new FormData(e.target);
-        }
-
-        fetch(url, { method: "POST", body: formData })
+        fetch(url, { method: "POST", body: new FormData(e.target) })
           .then((response) => response.text())
           .then((data) => {
             document.getElementById(outputId).innerText = data;

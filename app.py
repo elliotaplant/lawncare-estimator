@@ -83,7 +83,11 @@ def transcribe():
 @auth.login_required
 def estimate():
     try:
-        prompt = request.json['prompt']
+        # Get 'prompt' from the form data
+        prompt = request.form.get('prompt')
+        if not prompt:
+            return {'error': 'No prompt in form data'}, 400
+
         estimate = create_estimate(prompt)
         return estimate, 200
     except Exception as e:
