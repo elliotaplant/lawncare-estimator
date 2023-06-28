@@ -21,6 +21,13 @@
         <input type="submit" value="Estimate from Audio" />
       </form>
       <p id="pipelineResult"></p>
+      <button
+        id="pipelineCopyButton"
+        onclick="copyToClipboard('pipelineResult')"
+        style="display: none"
+      >
+        Copy to clipboard
+      </button>
 
       <!-- Transcription form -->
       <form id="transcribeForm" enctype="multipart/form-data">
@@ -28,22 +35,36 @@
         <input type="submit" value="Transcribe" />
       </form>
       <p id="transcript"></p>
+      <button
+        id="transcriptCopyButton"
+        onclick="copyToClipboard('transcript')"
+        style="display: none"
+      >
+        Copy to clipboard
+      </button>
 
       <!-- Estimate form -->
       <form id="estimateForm">
-        <textarea name="prompt" required rows="20">
+        <textarea name="prompt" required>
         Create a list of materials, labor and other work required to complete a job for the following transcript:
 
-        "TRANSCRIPT_GOES_HERE"
+        "{{ transcript }}"
 
         Include calculations for all measurements and hours. The result will be given to an associate to combine with prices and create an estimate.
         </textarea>
         <input type="submit" value="Create Estimate" />
       </form>
       <p id="estimate"></p>
+      <button
+        id="estimateCopyButton"
+        onclick="copyToClipboard('estimate')"
+        style="display: none"
+      >
+        Copy to clipboard
+      </button>
     </main>
     <script>
-      function handleSubmit(e, url, outputId) {
+      function handleSubmit(e, url, outputId, copyButtonId) {
         e.preventDefault();
         var submitButton = e.target.querySelector('input[type="submit"]');
         submitButton.disabled = true;
@@ -60,32 +81,46 @@
           .then((response) => response.text())
           .then((data) => {
             document.getElementById(outputId).innerText = data;
+            document.getElementById(copyButtonId).style.display = "inline"; // Show copy button
           })
           .catch((error) => {
             console.error("Error:", error);
             document.getElementById(outputId).innerText = "Error: " + error;
+            document.getElementById(copyButtonId).style.display = "none"; // Hide copy button
           })
           .finally(() => {
             submitButton.disabled = false;
           });
       }
 
+      function copyToClipboard(outputId) {
+        var text = document.getElementById(outputId).innerText;
+        navigator.clipboard.writeText(text).then(
+          function () {
+            alert("Copying to clipboard was successful!");
+          },
+          function (err) {
+            alert("Could not copy text: ", err);
+          }
+        );
+      }
+
       document
         .getElementById("pipelineForm")
         .addEventListener("submit", function (e) {
-          handleSubmit(e, "/pipeline", "pipelineResult");
+          handleSubmit(e, "/pipeline", "pipelineResult", "pipelineCopyButton");
         });
 
       document
         .getElementById("transcribeForm")
         .addEventListener("submit", function (e) {
-          handleSubmit(e, "/transcribe", "transcript");
+          handleSubmit(e, "/transcribe", "transcript", "transcriptCopyButton");
         });
 
       document
         .getElementById("estimateForm")
         .addEventListener("submit", function (e) {
-          handleSubmit(e, "/create-estimate", "estimate");
+          handleSubmit(e, "/create-estimate", "estimate", "estimateCopyButton");
         });
     </script>
   </body>
