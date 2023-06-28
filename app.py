@@ -1,17 +1,40 @@
-from flask import Flask, request
+import os
+import tempfile
+from flask import Flask, request, send_from_directory
 import openai
 
-app = Flask(__name__)
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+app = Flask(__name__, static_folder='public')
 
 
 @app.route('/')
-def hello_world():
-    return 'Hello, World!'
+def home():
+    return send_from_directory(app.static_folder, 'index.html')
 
 
 @app.route('/transcribe', methods=['POST'])
 def transcribe():
-    file = request.files['audio_file']  # May need to get this as a list?
-    # assume audio file is in the correct format
-    response = openai.Whisper.asr(file.read())
-    return response['choices'][0]['transcript'], 200
+    try:
+
+        file = request.files['audio_file']
+        file_extension = file.filename.rsplit('.', 1)[1]
+        print(f"Transcribing {file.filename}")
+
+        # Create a temporary file with the same extension as the uploaded file
+        with tempfile.NamedTemporaryFile(
+                suffix="." + file_extension, delete=False) as temp_file:
+            temp_file.write(file.read())
+
+        # Transcribe the audio file using the OpenAI Whisper API
+        with open(temp_file.name, "rb") as audio_file:
+            response = openai.Audio.transcribe("whisper-1", audio_file)
+
+        # Delete the temporary file
+        os.remove(temp_file.name)
+
+        print(f"Transcribed {file.filename}. Length: {len(response['text'])}")
+
+        return response['text'], 200
+    except Exception as e:
+        return str(e), 500

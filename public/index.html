@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lawn Care Estimation</title>
+    <link rel="stylesheet" href="https://unpkg.com/mvp.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Lawn Care Estimation</h1>
+      <p>Upload your audio file for transcription</p>
+    </header>
+    <main>
+      <form id="transcribeForm" enctype="multipart/form-data">
+        <input type="file" name="audio_file" accept="audio/*" required />
+        <input type="submit" value="Transcribe" />
+      </form>
+      <p id="transcript"></p>
+    </main>
+    <script>
+      document
+        .getElementById("transcribeForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          var submitButton = e.target.querySelector('input[type="submit"]');
+          submitButton.disabled = true;
+
+          var formData = new FormData(e.target);
+          fetch("/transcribe", { method: "POST", body: formData })
+            .then((response) => response.text())
+            .then((data) => {
+              document.getElementById("transcript").innerText = data;
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              document.getElementById("transcript").innerText =
+                "Error: " + error;
+            })
+            .finally(() => {
+              submitButton.disabled = false;
+            });
+        });
+    </script>
+  </body>
+</html>
