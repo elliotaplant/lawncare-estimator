@@ -2,10 +2,16 @@ import os
 import tempfile
 from flask import Flask, request, send_from_directory
 import openai
+from queryable_index import QueryableIndex
+
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 app = Flask(__name__, static_folder='public')
+
+# Construct and initialize QueryableIndex
+index = QueryableIndex("./saved_index")
+index.initialize()
 
 
 @app.route('/')
@@ -44,4 +50,17 @@ def transcribe():
 def create_estimate():
     prompt = request.json['prompt']
     print("Creating estimate for prompt:", prompt)
-    return 'Estimate created', 200
+
+    try:
+        # Ensure index is initialized
+        if not index:
+            raise ValueError("QueryableIndex not initialized.")
+
+        # Use the QueryableIndex to process the prompt
+        response = index.query(prompt)
+        print(response)
+        return str(response), 200
+
+    except Exception as e:
+        print(e)
+        return {'error': str(e)}, 400

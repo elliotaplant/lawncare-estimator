@@ -1,4 +1,7 @@
 Flask
+Flask-Cors==3.0.10
 Gunicorn
 openai
 urllib3==1.26.7
+langchain==0.0.154
+llama-index==0.6.13
