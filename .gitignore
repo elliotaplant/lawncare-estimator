@@ -83,7 +83,9 @@ celerybeat-schedule
 
 # Environments
 .env
+.envrc
 .venv
+venv-lawncare
 env/
 venv/
 ENV/

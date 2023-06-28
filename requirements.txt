@@ -1,2 +1,4 @@
 Flask
 Gunicorn
+openai
+urllib3==1.26.7
