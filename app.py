@@ -38,3 +38,10 @@ def transcribe():
         return response['text'], 200
     except Exception as e:
         return str(e), 500
+
+
+@app.route('/create-estimate', methods=['POST'])
+def create_estimate():
+    prompt = request.json['prompt']
+    print("Creating estimate for prompt:", prompt)
+    return 'Estimate created', 200

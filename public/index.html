@@ -9,14 +9,29 @@
   <body>
     <header>
       <h1>Lawn Care Estimation</h1>
-      <p>Upload your audio file for transcription</p>
+      <p>
+        Upload your audio file for transcription or enter a prompt for
+        estimation
+      </p>
     </header>
     <main>
+      <!-- Transcription form -->
       <form id="transcribeForm" enctype="multipart/form-data">
         <input type="file" name="audio_file" accept="audio/*" required />
         <input type="submit" value="Transcribe" />
       </form>
       <p id="transcript"></p>
+
+      <!-- Estimate form -->
+      <form id="estimateForm">
+        <textarea
+          name="prompt"
+          placeholder="Enter your prompt here..."
+          required
+        ></textarea>
+        <input type="submit" value="Create Estimate" />
+      </form>
+      <p id="estimate"></p>
     </main>
     <script>
       document
@@ -36,6 +51,32 @@
               console.error("Error:", error);
               document.getElementById("transcript").innerText =
                 "Error: " + error;
+            })
+            .finally(() => {
+              submitButton.disabled = false;
+            });
+        });
+
+      document
+        .getElementById("estimateForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          var submitButton = e.target.querySelector('input[type="submit"]');
+          submitButton.disabled = true;
+
+          var prompt = e.target.querySelector('textarea[name="prompt"]').value;
+          fetch("/create-estimate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt: prompt }),
+          })
+            .then((response) => response.text())
+            .then((data) => {
+              document.getElementById("estimate").innerText = data;
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              document.getElementById("estimate").innerText = "Error: " + error;
             })
             .finally(() => {
               submitButton.disabled = false;
